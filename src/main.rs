@@ -23,6 +23,17 @@ fn count_xml_elements(filename: &str) -> IndexMap<String, i32> {
                 } else {
                     counts.insert(full_element.clone(), 1);
                 }
+                e.attributes().with_checks(false).for_each(|a| {
+                    let attr = a.unwrap();
+                    let key = decoder.decode(attr.key.as_ref()).unwrap();
+                    let value = decoder.decode(attr.value.as_ref()).unwrap();
+                    let full_attr = format!("{}[@{}='{}']", full_element, key, value);
+                    if counts.contains_key(&full_attr) {
+                        *counts.get_mut(&full_attr).unwrap() += 1;
+                    } else {
+                        counts.insert(full_attr.clone(), 1);
+                    }
+                });
             }
             Ok(Event::Empty(ref e)) => {
                 let name = e.name();
